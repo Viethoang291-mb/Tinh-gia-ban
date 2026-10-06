@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Tính Giá Bán">
+<meta name="apple-mobile-web-app-title" content="Cost Cà Phê">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#1f5a3a">
 <link rel="manifest" href="manifest.webmanifest">
@@ -14,7 +14,7 @@
 <title>Bảng Tính Giá Bán</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Bitter:wght@500;700&display=swap">
 <style>
-/* Layout: ba thẻ (Món, Nguyên liệu, Chi phí tháng) trong một cột hẹp, ưu tiên màn hình điện thoại */
+/* Layout: một cột hẹp cho điện thoại; bảng cost tổng ở trên, thẻ từng sản phẩm hạt ở dưới */
 :root{
   --bg:#f3f5f1; --surface:#ffffff; --ink:#18241d; --muted:#5d6b62; --line:#d5dcd4;
   --accent:#1f5a3a; --accent-ink:#ffffff; --accent-soft:#e2ede5; --warn:#a4501a; --warn-soft:#f7e8da;
@@ -29,7 +29,7 @@
 
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:24px 56px;-webkit-text-size-adjust:100%}
-.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 h1{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.15;margin:0;text-wrap:balance}
 h2{font-family:var(--display);font-weight:500;font-size:18px;margin:0}
 .sub,.hint{color:var(--muted);margin:0;font-size:13.5px;max-width:62ch}
@@ -38,52 +38,41 @@ button:hover{border-color:var(--accent)}
 button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
 button.x{padding:0;width:38px;height:38px;color:var(--muted);flex:none}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.tabs{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
-.tabs button{flex:1;border:0;border-radius:0;background:transparent;font-weight:500;padding:10px 6px}
-.tabs button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
 .note{background:var(--accent-soft);border-radius:6px;padding:8px 12px;font-size:13.5px}
 .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .status{font-size:13px;color:var(--muted)}
-.panel{display:flex;flex-direction:column;gap:12px}
+.list{display:flex;flex-direction:column;gap:12px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0}
 .pad{padding:14px;display:flex;flex-direction:column;gap:12px}
 label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);font-weight:500;min-width:0}
 input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0;height:38px}
 input.num{text-align:right;font-variant-numeric:tabular-nums}
-.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .fields .wide{grid-column:1/-1}
-
+.sec{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tablebox{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:14px}
+th,td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:12px;color:var(--muted);font-weight:600}
+th:first-child,td:first-child{text-align:left;white-space:normal;min-width:130px}
+tbody tr:last-child td{border-bottom:0}
+td.cost{font-weight:600;color:var(--accent)}
 summary{list-style:none;cursor:pointer;padding:14px;display:flex;gap:12px;align-items:center;justify-content:space-between}
 summary::-webkit-details-marker{display:none}
-.s-name{font-weight:600;font-size:16px;overflow-wrap:anywhere;min-width:0}
-.s-meta{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
-.s-price{font-family:var(--display);font-weight:700;font-size:22px;color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
+.s-name{font-weight:600;font-size:16px;overflow-wrap:anywhere}
+.s-meta{color:var(--muted);font-size:13px}
+.s-cost{text-align:right;white-space:nowrap}
+.s-cost b{display:block;font-family:var(--display);font-weight:700;font-size:22px;color:var(--accent);font-variant-numeric:tabular-nums}
+.s-cost span{font-size:12px;color:var(--muted)}
 details[open]>summary{border-bottom:1px solid var(--line)}
-.chip{display:inline-block;background:var(--warn-soft);color:var(--warn);border-radius:99px;padding:1px 8px;font-size:12px;font-weight:600;margin-left:6px}
-
-.sec{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.rrow{display:grid;grid-template-columns:minmax(0,1fr) 84px 34px 92px 38px;gap:8px;align-items:center}
-.unit{color:var(--muted);font-size:13px}
-.amt{text-align:right;font-variant-numeric:tabular-nums;font-weight:500;white-space:nowrap}
+.erow{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 38px;gap:8px;align-items:end}
 dl{margin:0;display:flex;flex-direction:column}
 dl div{display:flex;justify-content:space-between;gap:16px;padding:7px 0;border-bottom:1px solid var(--line)}
 dl div:last-child{border-bottom:0}
 dt{color:var(--muted)} dd{margin:0;font-variant-numeric:tabular-nums;text-align:right;font-weight:500}
 dl .strong dt,dl .strong dd{color:var(--ink);font-weight:600}
 .neg{color:var(--warn)}
-
-.irow{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) 84px 76px 70px 38px;gap:8px;align-items:end}
-.icost{grid-column:1/-1;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
-.icost b{color:var(--ink)}
-.orow{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) 38px;gap:8px;align-items:end}
-@media (max-width:620px){
-  input,select,button{font-size:16px}
-  .rrow{grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr) 38px}
-  .rrow select{grid-column:1/-1}
-  .irow{grid-template-columns:repeat(3,minmax(0,1fr)) 38px}
-  .irow .iname{grid-column:1/-1}
-  .irow .iprice{grid-column:1/3}
-}
+@media (max-width:620px){ input,select,button{font-size:16px} }
 body{padding-top:calc(24px + env(safe-area-inset-top,0px));padding-bottom:calc(56px + env(safe-area-inset-bottom,0px))}
 </style>
 </head>
@@ -91,19 +80,27 @@ body{padding-top:calc(24px + env(safe-area-inset-top,0px));padding-bottom:calc(5
 
 <div class="wrap">
   <header>
-    <h1>Bảng tính giá bán</h1>
-    <p class="sub">Tính giá cốt từng món theo định lượng nguyên liệu, rồi ra giá bán theo tỷ lệ giá cốt anh đặt.</p>
+    <h1>Bảng tính cost cà phê hạt</h1>
+    <p class="sub">Tính giá cốt mỗi túi từ giá hạt, hao hụt, công rang và bao bì, rồi ra giá bán theo mức lãi anh đặt.</p>
   </header>
-  <div class="tabs" role="group" aria-label="Chọn phần">
-    <button type="button" data-act="tab" data-v="items">Món</button>
-    <button type="button" data-act="tab" data-v="ings">Nguyên liệu</button>
-    <button type="button" data-act="tab" data-v="ops">Chi phí tháng</button>
-  </div>
-  <div class="note" id="sampleNote">Đang hiển thị số liệu ví dụ. Sửa trực tiếp, hoặc bấm “Xóa hết để nhập mới” trong thẻ Chi phí tháng.</div>
+  <div class="note" id="sampleNote">Đang hiển thị số liệu ví dụ. Bấm vào từng sản phẩm để sửa theo số của anh.</div>
 
-  <div class="panel" id="p-items"></div>
-  <div class="panel" id="p-ings" hidden></div>
-  <div class="panel" id="p-ops" hidden></div>
+  <div class="card pad">
+    <h2>Bảng cost sản phẩm</h2>
+    <div class="tablebox"><table>
+      <thead><tr><th>Sản phẩm</th><th>Cost / túi</th><th>Cost / kg</th><th>Giá bán</th><th>Lãi / túi</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table></div>
+    <div class="bar"><button type="button" class="primary" data-act="add">+ Thêm sản phẩm</button>
+      <button type="button" data-act="copy">Sao chép bảng</button><span class="status" id="status" role="status"></span></div>
+  </div>
+
+  <div class="list" id="list"></div>
+
+  <div class="card pad">
+    <div class="fields"><label>Làm tròn giá bán lên<select id="rnd" data-f="set" data-k="round"></select></label></div>
+    <div class="bar"><button type="button" data-act="sample">Nạp lại số liệu ví dụ</button><button type="button" data-act="blank">Xóa hết để nhập mới</button></div>
+  </div>
 </div>
 
 <script>
@@ -111,173 +108,120 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt = n => isFinite(n) ? Math.round(n).toLocaleString('vi-VN') : '—';
 const dong = n => isFinite(n) ? fmt(n)+' đ' : '—';
-const dec = n => isFinite(n) ? n.toLocaleString('vi-VN',{maximumFractionDigits:n<100?2:0}) : '—';
 const pct = n => isFinite(n) ? (n*100).toLocaleString('vi-VN',{maximumFractionDigits:1})+'%' : '—';
 const qstr = n => n ? String(n).replace('.',',') : '';
 function num(s){ s=String(s).trim(); if(/^\d+\.\d{1,2}$/.test(s)) return parseFloat(s);
   const v=parseFloat(s.replace(/\./g,'').replace(',','.').replace(/[^\d.\-]/g,'')); return isFinite(v)?v:0; }
 
-const SAMPLE = {tab:'items',round:1000,defTarget:30,cups:3000,
-  ings:[
-    {id:1,n:'Cà phê Robusta rang',price:180000,pack:1000,unit:'g',loss:0},
-    {id:2,n:'Cà phê Arabica rang',price:320000,pack:1000,unit:'g',loss:0},
-    {id:3,n:'Sữa đặc',price:24000,pack:380,unit:'g',loss:0},
-    {id:4,n:'Sữa tươi',price:34000,pack:1000,unit:'ml',loss:0},
-    {id:5,n:'Đường nước',price:20000,pack:1000,unit:'ml',loss:0},
-    {id:6,n:'Đá viên',price:2000,pack:1000,unit:'g',loss:10},
-    {id:7,n:'Ly nhựa có nắp',price:45000,pack:50,unit:'cái',loss:0},
-    {id:8,n:'Ống hút',price:15000,pack:100,unit:'cái',loss:0},
-    {id:9,n:'Túi zip 250g có tem',price:350000,pack:100,unit:'cái',loss:0}],
-  items:[
-    {n:'Cà phê đen đá',target:30,price:0,open:false,rows:[{ing:1,q:20},{ing:5,q:10},{ing:6,q:150},{ing:7,q:1},{ing:8,q:1}]},
-    {n:'Cà phê sữa đá',target:30,price:0,open:true,rows:[{ing:1,q:20},{ing:3,q:30},{ing:6,q:150},{ing:7,q:1},{ing:8,q:1}]},
-    {n:'Bạc xỉu',target:30,price:0,open:false,rows:[{ing:2,q:15},{ing:3,q:30},{ing:4,q:60},{ing:6,q:120},{ing:7,q:1},{ing:8,q:1}]},
-    {n:'Arabica rang xay túi 250g',target:65,price:0,open:false,rows:[{ing:2,q:250},{ing:9,q:1}]}],
-  ops:[{n:'Mặt bằng',a:6000000},{n:'Lương nhân viên',a:12000000},{n:'Điện, nước, internet',a:2500000}]};
-const BLANK = {tab:'ings',round:1000,defTarget:30,cups:0,ings:[{id:1,n:'',price:0,pack:0,unit:'g',loss:0}],items:[],ops:[]};
-const KEY='tinh-gia-ban-v2';
-let S, sample=true, msg='';
-try{ const sv=JSON.parse(localStorage.getItem(KEY)); if(sv&&sv.ings&&sv.items){S=sv;sample=false;} }catch(e){}
+const SAMPLE = {round:1000,items:[
+  {n:'Arabica Sơn La rang mộc, túi 250g',bean:150000,loss:18,roast:25000,w:250,margin:40,price:0,open:true,
+    extras:[{n:'Túi zip có van một chiều',a:4500},{n:'Tem nhãn',a:800}]},
+  {n:'Arabica Sơn La rang mộc, túi 500g',bean:150000,loss:18,roast:25000,w:500,margin:35,price:0,open:false,
+    extras:[{n:'Túi zip có van một chiều',a:6000},{n:'Tem nhãn',a:800}]},
+  {n:'Robusta nhân xanh, bao 1kg',bean:95000,loss:1,roast:0,w:1000,margin:15,price:0,open:false,
+    extras:[{n:'Bao PE',a:2000}]}]};
+const BLANK = {round:1000,items:[{n:'',bean:0,loss:0,roast:0,w:250,margin:30,price:0,open:true,extras:[]}]};
+const KEY='tinh-gia-ban-v3';
+let S, sample=true;
+try{ const sv=JSON.parse(localStorage.getItem(KEY)); if(sv&&Array.isArray(sv.items)){S=sv;sample=false;} }catch(e){}
 if(!S) S=JSON.parse(JSON.stringify(SAMPLE));
 
-const ingBy = id => S.ings.find(g=>g.id==id);
-const ucost = g => (g && g.pack>0 && g.loss<100) ? g.price/(g.pack*(1-g.loss/100)) : 0;
-const opsTotal = () => S.ops.reduce((a,o)=>a+o.a,0);
 const roundUp = v => S.round>0 ? Math.ceil((v-1e-6)/S.round)*S.round : Math.round(v);
 function calc(it){
-  const cogs = it.rows.reduce((a,r)=>a+ucost(ingBy(r.ing))*r.q,0);
-  const sug = (cogs>0 && it.target>0) ? roundUp(cogs/(it.target/100)) : 0;
+  const keep = 1-it.loss/100;
+  const perKg = keep>0 ? (it.bean+it.roast)/keep : NaN;      // giá hạt thành phẩm mỗi kg, đã tính hao hụt và công rang
+  const beanCost = perKg*it.w/1000;
+  const extra = it.extras.reduce((a,x)=>a+x.a,0);
+  const cost = beanCost+extra;
+  const sug = cost>0 ? roundUp(cost*(1+it.margin/100)) : 0;
   const price = it.price>0 ? it.price : sug;
-  const gross = price-cogs, F=opsTotal(), op = S.cups>0 ? F/S.cups : 0;
-  return {cogs,sug,price,ratio:price>0?cogs/price:NaN,gross,op,net:gross-op,
-    be:(F>0&&gross>0)?Math.ceil(F/gross-1e-9):null, over:it.price>0 && it.target>0 && cogs/price>it.target/100+0.005};
+  return {perKg,beanCost,extra,cost,costKg:it.w>0?cost/it.w*1000:NaN,sug,price,profit:price-cost,
+    onCost:cost>0?(price-cost)/cost:NaN,onPrice:price>0?(price-cost)/price:NaN};
 }
 
-function renderItems(){
-  const opts = sel => S.ings.map(g=>`<option value="${g.id}"${g.id==sel?' selected':''}>${esc(g.n||'(chưa đặt tên)')}</option>`).join('');
-  $('p-items').innerHTML = `
-    <div class="bar"><button type="button" class="primary" data-act="addItem">+ Thêm món</button>
-      <button type="button" data-act="copy">Sao chép bảng giá</button><span class="status" id="status" role="status">${esc(msg)}</span></div>
-    ${S.items.length?'':'<p class="hint">Chưa có món nào. Nhập nguyên liệu ở thẻ Nguyên liệu, rồi bấm “Thêm món” để lập công thức định lượng.</p>'}
-    ${S.items.map((it,i)=>`<details class="card" data-i="${i}"${it.open?' open':''}>
-      <summary><span style="min-width:0"><span class="s-name" id="sn${i}"></span><span id="sw${i}"></span><br><span class="s-meta" id="sm${i}"></span></span><span class="s-price" id="sp${i}"></span></summary>
-      <div class="pad">
-        <div class="fields">
-          <label class="wide">Tên món<input type="text" id="in${i}" data-f="item" data-i="${i}" data-k="n" data-t="txt" value="${esc(it.n)}"></label>
-          <label>Tỷ lệ giá cốt mục tiêu (%)<input class="num" inputmode="decimal" id="it${i}" data-f="item" data-i="${i}" data-k="target" value="${qstr(it.target)}"></label>
-          <label>Giá bán thực tế (đ)<input class="num" inputmode="numeric" id="ip${i}" data-f="item" data-i="${i}" data-k="price" data-t="money" placeholder="Để trống = giá đề xuất" value="${it.price?fmt(it.price):''}"></label>
-        </div>
-        <div class="sec">Công thức định lượng cho 1 món</div>
-        ${it.rows.map((r,j)=>`<div class="rrow">
-          <select id="rs${i}_${j}" aria-label="Nguyên liệu" data-f="row" data-i="${i}" data-j="${j}" data-k="ing">${opts(r.ing)}</select>
-          <input class="num" inputmode="decimal" id="rq${i}_${j}" aria-label="Định lượng" data-f="row" data-i="${i}" data-j="${j}" data-k="q" value="${qstr(r.q)}">
-          <span class="unit">${esc(ingBy(r.ing)?.unit||'')}</span>
-          <span class="amt" id="rm${i}_${j}"></span>
-          <button type="button" class="x" aria-label="Xóa nguyên liệu khỏi công thức" data-act="delRow" data-i="${i}" data-j="${j}">✕</button></div>`).join('')}
-        <div><button type="button" data-act="addRow" data-i="${i}">+ Thêm nguyên liệu vào công thức</button></div>
-        <dl>
-          <div class="strong"><dt>Giá cốt nguyên liệu</dt><dd id="d${i}cogs"></dd></div>
-          <div><dt>Giá bán đề xuất</dt><dd id="d${i}sug"></dd></div>
-          <div class="strong"><dt>Giá bán đang tính</dt><dd id="d${i}price"></dd></div>
-          <div><dt>Tỷ lệ giá cốt trên giá bán</dt><dd id="d${i}ratio"></dd></div>
-          <div><dt>Lãi gộp mỗi món</dt><dd id="d${i}gross"></dd></div>
-          <div><dt>Chi phí vận hành chia cho mỗi món</dt><dd id="d${i}op"></dd></div>
-          <div class="strong"><dt>Lãi sau chi phí vận hành</dt><dd id="d${i}net"></dd></div>
-          <div><dt>Số món cần bán mỗi tháng để đủ chi phí vận hành</dt><dd id="d${i}be"></dd></div>
-        </dl>
-        <div class="bar"><button type="button" data-act="dupItem" data-i="${i}">Nhân bản món</button><button type="button" data-act="delItem" data-i="${i}">Xóa món</button></div>
-      </div></details>`).join('')}`;
-}
-function renderIngs(){
-  const units=['g','ml','cái','gói','quả','kg','lít'];
-  $('p-ings').innerHTML = `
-    <p class="hint">Nhập giá mua và quy cách của từng nguyên liệu. Ví dụ: cà phê rang giá 180.000 đ cho 1.000 g. Hao hụt là phần không dùng được (rơi vãi, đá tan, hàng lỗi).</p>
-    ${S.ings.map((g,i)=>`<div class="card pad"><div class="irow">
-      <label class="iname">Tên nguyên liệu<input type="text" id="gn${i}" data-f="ing" data-i="${i}" data-k="n" data-t="txt" value="${esc(g.n)}"></label>
-      <label class="iprice">Giá mua (đ)<input class="num" inputmode="numeric" id="gp${i}" data-f="ing" data-i="${i}" data-k="price" data-t="money" value="${g.price?fmt(g.price):''}"></label>
-      <label>Quy cách<input class="num" inputmode="decimal" id="gk${i}" data-f="ing" data-i="${i}" data-k="pack" value="${g.pack?dec(g.pack):''}"></label>
-      <label>Đơn vị<select id="gu${i}" data-f="ing" data-i="${i}" data-k="unit" data-t="txt">${units.map(u=>`<option${u===g.unit?' selected':''}>${u}</option>`).join('')}</select></label>
-      <label>Hao hụt %<input class="num" inputmode="decimal" id="gl${i}" data-f="ing" data-i="${i}" data-k="loss" value="${qstr(g.loss)}"></label>
-      <button type="button" class="x" aria-label="Xóa nguyên liệu" data-act="delIng" data-i="${i}">✕</button>
-      <div class="icost" id="gc${i}"></div></div></div>`).join('')}
-    <div class="bar"><button type="button" class="primary" data-act="addIng">+ Thêm nguyên liệu</button><span class="status" role="status">${esc(msg)}</span></div>`;
-}
-function renderOps(){
-  $('p-ops').innerHTML = `
-    <div class="card pad"><h2>Chi phí vận hành mỗi tháng</h2>
-      <p class="hint">Các khoản không nằm trong công thức món: mặt bằng, lương, điện nước. App chia đều cho số món bán ra để anh thấy lãi còn lại sau vận hành.</p>
-      ${S.ops.map((o,i)=>`<div class="orow">
-        <label>Khoản chi<input type="text" id="on${i}" data-f="op" data-i="${i}" data-k="n" data-t="txt" value="${esc(o.n)}"></label>
-        <label>Số tiền mỗi tháng (đ)<input class="num" inputmode="numeric" id="oa${i}" data-f="op" data-i="${i}" data-k="a" data-t="money" value="${o.a?fmt(o.a):''}"></label>
-        <button type="button" class="x" aria-label="Xóa khoản chi" data-act="delOp" data-i="${i}">✕</button></div>`).join('')}
-      <div><button type="button" data-act="addOp">+ Thêm khoản chi</button></div>
-      <div class="fields"><label>Số món bán ra mỗi tháng (ước tính)<input class="num" inputmode="numeric" id="cups" data-f="set" data-k="cups" data-t="money" value="${S.cups?fmt(S.cups):''}"></label></div>
-      <dl><div><dt>Tổng chi phí vận hành tháng</dt><dd id="opT"></dd></div><div class="strong"><dt>Chia cho mỗi món</dt><dd id="opP"></dd></div></dl>
-    </div>
-    <div class="card pad"><h2>Cách ra giá</h2>
+function render(){
+  $('rnd').innerHTML=[[0,'Không làm tròn'],[500,'500 đ'],[1000,'1.000 đ'],[5000,'5.000 đ'],[10000,'10.000 đ']].map(([v,t])=>`<option value="${v}"${v==S.round?' selected':''}>${t}</option>`).join('');
+  $('tbody').innerHTML=S.items.map((it,i)=>`<tr><td id="t${i}n"></td><td class="cost" id="t${i}c"></td><td id="t${i}k"></td><td id="t${i}p"></td><td id="t${i}l"></td></tr>`).join('')
+    || '<tr><td colspan="5">Chưa có sản phẩm. Bấm “Thêm sản phẩm”.</td></tr>';
+  $('list').innerHTML=S.items.map((it,i)=>`<details class="card" data-i="${i}"${it.open?' open':''}>
+    <summary><span style="min-width:0"><span class="s-name" id="s${i}n"></span><br><span class="s-meta" id="s${i}m"></span></span>
+      <span class="s-cost"><span>Cost / túi</span><b id="s${i}c"></b></span></summary>
+    <div class="pad">
       <div class="fields">
-        <label>Tỷ lệ giá cốt mặc định cho món mới (%)<input class="num" inputmode="decimal" id="defT" data-f="set" data-k="defTarget" value="${qstr(S.defTarget)}"></label>
-        <label>Làm tròn giá bán lên<select id="rnd" data-f="set" data-k="round">${[[0,'Không làm tròn'],[500,'500 đ'],[1000,'1.000 đ'],[5000,'5.000 đ'],[10000,'10.000 đ']].map(([v,t])=>`<option value="${v}"${v==S.round?' selected':''}>${t}</option>`).join('')}</select></label>
+        <label class="wide">Tên sản phẩm<input type="text" id="n${i}" data-f="item" data-i="${i}" data-k="n" data-t="txt" value="${esc(it.n)}"></label>
+        <label>Giá hạt mua vào (đ/kg)<input class="num" inputmode="numeric" id="b${i}" data-f="item" data-i="${i}" data-k="bean" data-t="money" value="${it.bean?fmt(it.bean):''}"></label>
+        <label>Hao hụt khi rang, sàng (%)<input class="num" inputmode="decimal" id="l${i}" data-f="item" data-i="${i}" data-k="loss" value="${qstr(it.loss)}"></label>
+        <label>Công rang, sơ chế (đ/kg hạt mua)<input class="num" inputmode="numeric" id="r${i}" data-f="item" data-i="${i}" data-k="roast" data-t="money" value="${it.roast?fmt(it.roast):''}"></label>
+        <label>Định lượng mỗi túi (g)<input class="num" inputmode="decimal" id="w${i}" data-f="item" data-i="${i}" data-k="w" value="${qstr(it.w)}"></label>
       </div>
-      <p class="hint">Giá bán đề xuất = giá cốt nguyên liệu chia cho tỷ lệ giá cốt. Ví dụ giá cốt 6.900 đ, tỷ lệ 30% thì giá bán là 23.000 đ.</p>
-    </div>
-    <div class="bar"><button type="button" data-act="sample">Nạp lại số liệu ví dụ</button><button type="button" data-act="blank">Xóa hết để nhập mới</button></div>`;
+      <div class="sec">Chi phí khác trên mỗi túi</div>
+      ${it.extras.map((x,j)=>`<div class="erow">
+        <label>Khoản chi<input type="text" id="en${i}_${j}" data-f="extra" data-i="${i}" data-j="${j}" data-k="n" data-t="txt" value="${esc(x.n)}"></label>
+        <label>Số tiền (đ/túi)<input class="num" inputmode="numeric" id="ea${i}_${j}" data-f="extra" data-i="${i}" data-j="${j}" data-k="a" data-t="money" value="${x.a?fmt(x.a):''}"></label>
+        <button type="button" class="x" aria-label="Xóa khoản chi" data-act="delExtra" data-i="${i}" data-j="${j}">✕</button></div>`).join('')}
+      <div><button type="button" data-act="addExtra" data-i="${i}">+ Thêm khoản chi (bao bì, tem, vận chuyển)</button></div>
+      <dl>
+        <div><dt>Giá hạt thành phẩm sau hao hụt (đ/kg)</dt><dd id="d${i}perKg"></dd></div>
+        <div><dt>Tiền hạt trong mỗi túi</dt><dd id="d${i}bean"></dd></div>
+        <div><dt>Chi phí khác mỗi túi</dt><dd id="d${i}extra"></dd></div>
+        <div class="strong"><dt>Cost mỗi túi</dt><dd id="d${i}cost"></dd></div>
+        <div><dt>Cost quy ra mỗi kg thành phẩm</dt><dd id="d${i}costKg"></dd></div>
+      </dl>
+      <div class="sec">Giá bán</div>
+      <div class="fields">
+        <label>Lãi mong muốn trên cost (%)<input class="num" inputmode="decimal" id="m${i}" data-f="item" data-i="${i}" data-k="margin" value="${qstr(it.margin)}"></label>
+        <label>Giá bán thực tế (đ/túi)<input class="num" inputmode="numeric" id="p${i}" data-f="item" data-i="${i}" data-k="price" data-t="money" placeholder="Để trống = giá đề xuất" value="${it.price?fmt(it.price):''}"></label>
+      </div>
+      <dl>
+        <div><dt>Giá bán đề xuất</dt><dd id="d${i}sug"></dd></div>
+        <div class="strong"><dt>Giá bán đang tính</dt><dd id="d${i}price"></dd></div>
+        <div class="strong"><dt>Lãi mỗi túi</dt><dd id="d${i}profit"></dd></div>
+        <div><dt>Lãi trên cost</dt><dd id="d${i}onCost"></dd></div>
+        <div><dt>Lãi trên giá bán</dt><dd id="d${i}onPrice"></dd></div>
+      </dl>
+      <div class="bar"><button type="button" data-act="dup" data-i="${i}">Nhân bản (đổi quy cách túi)</button><button type="button" data-act="del" data-i="${i}">Xóa sản phẩm</button></div>
+    </div></details>`).join('');
+  refresh();
 }
 function refresh(){
   $('sampleNote').hidden=!sample;
-  document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S.tab));
-  ['items','ings','ops'].forEach(t=>$('p-'+t).hidden=S.tab!==t);
   const set=(id,v,neg)=>{const e=$(id); if(e){e.textContent=v; e.classList.toggle('neg',!!neg);}};
-  S.items.forEach((it,i)=>{ const r=calc(it);
-    set('sn'+i,it.n||'(chưa đặt tên)'); set('sp'+i,r.price>0?dong(r.price):'—');
-    set('sm'+i,`Giá cốt ${dong(r.cogs)} · ${pct(r.ratio)} giá bán`);
-    const w=$('sw'+i); if(w) w.innerHTML = r.over?'<span class="chip">Vượt mục tiêu</span>':'';
-    it.rows.forEach((x,j)=>set(`rm${i}_${j}`,dong(ucost(ingBy(x.ing))*x.q)));
-    set(`d${i}cogs`,dong(r.cogs)); set(`d${i}sug`,r.sug?dong(r.sug):'—'); set(`d${i}price`,r.price?dong(r.price):'—');
-    set(`d${i}ratio`,pct(r.ratio),r.over); set(`d${i}gross`,r.price?dong(r.gross):'—',r.gross<0);
-    set(`d${i}op`,S.cups>0?dong(r.op):'Chưa nhập'); set(`d${i}net`,(r.price&&S.cups>0)?dong(r.net):'—',r.net<0);
-    set(`d${i}be`,r.be?fmt(r.be):(opsTotal()>0?'Không đạt':'—'),opsTotal()>0&&!r.be);
+  S.items.forEach((it,i)=>{ const r=calc(it), name=it.n||'(chưa đặt tên)', has=r.cost>0;
+    set(`t${i}n`,name); set(`t${i}c`,dong(r.cost)); set(`t${i}k`,dong(r.costKg)); set(`t${i}p`,has?dong(r.price):'—'); set(`t${i}l`,has?dong(r.profit):'—',r.profit<0);
+    set(`s${i}n`,name); set(`s${i}c`,dong(r.cost)); set(`s${i}m`,has?`Giá bán ${dong(r.price)} · lãi ${dong(r.profit)}`:'Nhập giá hạt để tính');
+    set(`d${i}perKg`,dong(r.perKg)); set(`d${i}bean`,dong(r.beanCost)); set(`d${i}extra`,dong(r.extra));
+    set(`d${i}cost`,dong(r.cost)); set(`d${i}costKg`,dong(r.costKg));
+    set(`d${i}sug`,has?dong(r.sug):'—'); set(`d${i}price`,has?dong(r.price):'—'); set(`d${i}profit`,has?dong(r.profit):'—',r.profit<0);
+    set(`d${i}onCost`,pct(r.onCost),r.onCost<0); set(`d${i}onPrice`,pct(r.onPrice),r.onPrice<0);
   });
-  S.ings.forEach((g,i)=>{const e=$('gc'+i); if(e) e.innerHTML = g.pack>0&&g.price>0 ? `Giá cốt: <b>${dec(ucost(g))} đ / ${esc(g.unit)}</b>` : 'Nhập giá mua và quy cách để tính giá mỗi đơn vị.';});
-  set('opT',dong(opsTotal())); set('opP',S.cups>0?dong(opsTotal()/S.cups):'Chưa nhập số món');
 }
-function renderAll(){ renderItems(); renderIngs(); renderOps(); refresh(); msg=''; }
 function save(){ try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){} }
-function touch(structural){ sample=false; save(); structural?renderAll():refresh(); }
+function touch(structural){ sample=false; save(); structural?render():refresh(); }
 
 document.addEventListener('input',e=>{ const t=e.target,d=t.dataset; if(!d.f) return;
-  const o = d.f==='ing'?S.ings[d.i] : d.f==='item'?S.items[d.i] : d.f==='row'?S.items[d.i].rows[d.j] : d.f==='op'?S.ops[d.i] : S;
+  const o = d.f==='item'?S.items[d.i] : d.f==='extra'?S.items[d.i].extras[d.j] : S;
   o[d.k] = d.t==='txt' ? t.value : (t.tagName==='SELECT' ? +t.value : Math.max(num(t.value),0));
-  touch(t.tagName==='SELECT');
+  touch(false);
 });
 document.addEventListener('focusout',e=>{ const t=e.target; if(t.dataset&&t.dataset.t==='money'){ const v=num(t.value); t.value=v?fmt(v):''; } });
 document.addEventListener('toggle',e=>{ const d=e.target; if(d.tagName==='DETAILS'&&S.items[d.dataset.i]){ S.items[d.dataset.i].open=d.open; save(); } },true);
 document.addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b) return; const a=b.dataset.act,i=+b.dataset.i,j=+b.dataset.j;
-  if(a==='tab'){ S.tab=b.dataset.v; save(); renderAll(); return; }
-  if(a==='sample'||a==='blank'){ S=JSON.parse(JSON.stringify(a==='sample'?SAMPLE:BLANK)); sample=a==='sample'; try{localStorage.removeItem(KEY);}catch(x){} if(!sample) save(); renderAll(); return; }
+  if(a==='sample'||a==='blank'){ S=JSON.parse(JSON.stringify(a==='sample'?SAMPLE:BLANK)); sample=a==='sample'; try{localStorage.removeItem(KEY);}catch(x){} if(!sample) save(); render(); return; }
   if(a==='copy'){ copyAll(); return; }
-  if(a==='addIng'){ S.ings.push({id:Math.max(0,...S.ings.map(g=>g.id))+1,n:'',price:0,pack:0,unit:'g',loss:0}); touch(true); $('gn'+(S.ings.length-1)).focus(); return; }
-  if(a==='delIng'){ const id=S.ings[i].id, used=S.items.filter(it=>it.rows.some(r=>r.ing==id)).length;
-    if(used){ msg=`“${S.ings[i].n||'Nguyên liệu'}” đang dùng trong ${used} món. Gỡ khỏi công thức trước khi xóa.`; renderAll(); return; }
-    S.ings.splice(i,1); touch(true); return; }
-  if(a==='addItem'){ if(!S.ings.length){ msg='Cần nhập nguyên liệu trước.'; S.tab='ings'; renderAll(); return; }
-    S.items.push({n:'',target:S.defTarget||30,price:0,open:true,rows:[{ing:S.ings[0].id,q:0}]}); touch(true); $('in'+(S.items.length-1)).focus(); return; }
-  if(a==='dupItem'){ const c=JSON.parse(JSON.stringify(S.items[i])); c.n=(c.n||'Món')+' (bản sao)'; S.items.splice(i+1,0,c); touch(true); return; }
-  if(a==='delItem'){ S.items.splice(i,1); touch(true); return; }
-  if(a==='addRow'){ if(!S.ings.length) return; S.items[i].rows.push({ing:S.ings[0].id,q:0}); touch(true); $(`rs${i}_${S.items[i].rows.length-1}`).focus(); return; }
-  if(a==='delRow'){ S.items[i].rows.splice(j,1); touch(true); return; }
-  if(a==='addOp'){ S.ops.push({n:'',a:0}); touch(true); $('on'+(S.ops.length-1)).focus(); return; }
-  if(a==='delOp'){ S.ops.splice(i,1); touch(true); return; }
+  if(a==='add'){ S.items.push({n:'',bean:0,loss:0,roast:0,w:250,margin:30,price:0,open:true,extras:[]}); touch(true); $('n'+(S.items.length-1)).focus(); return; }
+  if(a==='dup'){ const c=JSON.parse(JSON.stringify(S.items[i])); c.n=(c.n||'Sản phẩm')+' (bản sao)'; c.open=true; S.items.splice(i+1,0,c); touch(true); $('w'+(i+1)).focus(); return; }
+  if(a==='del'){ S.items.splice(i,1); touch(true); return; }
+  if(a==='addExtra'){ S.items[i].extras.push({n:'',a:0}); touch(true); $(`en${i}_${S.items[i].extras.length-1}`).focus(); return; }
+  if(a==='delExtra'){ S.items[i].extras.splice(j,1); touch(true); return; }
 });
 function copyAll(){
-  const t=['BẢNG GIÁ THEO ĐỊNH LƯỢNG','',...S.items.flatMap(it=>{const r=calc(it); return [
-    `${it.n||'(chưa đặt tên)'}: giá bán ${dong(r.price)}, giá cốt ${dong(r.cogs)} (${pct(r.ratio)}), lãi gộp ${dong(r.gross)}`,
-    ...it.rows.map(x=>{const g=ingBy(x.ing); return `  - ${g?.n||''}: ${qstr(x.q)||0} ${g?.unit||''} = ${dong(ucost(g)*x.q)}`;}),''];})].join('\n');
-  const say=m=>{const s=$('status'); if(s){s.textContent=m; setTimeout(()=>{s.textContent='';},2500);}};
+  const t=['BẢNG COST CÀ PHÊ HẠT','',...S.items.map(it=>{const r=calc(it);
+    return `${it.n||'(chưa đặt tên)'}: cost ${dong(r.cost)}/túi (${dong(r.costKg)}/kg), giá bán ${dong(r.price)}, lãi ${dong(r.profit)} (${pct(r.onCost)} trên cost)`;})].join('\n');
+  const say=m=>{const s=$('status'); s.textContent=m; setTimeout(()=>{s.textContent='';},2500);};
   const fb=()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');say('Đã sao chép');}catch(e){say('Không sao chép được');}a.remove();};
   try{navigator.clipboard.writeText(t).then(()=>say('Đã sao chép'),fb);}catch(e){fb();}
 }
-renderAll();
+render();
 </script>
 
 <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}</script>
