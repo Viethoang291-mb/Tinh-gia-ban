@@ -14,7 +14,7 @@
 <title>Bảng Tính Giá Bán</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Bitter:wght@500;700&display=swap">
 <style>
-/* Layout: cột nhập liệu bên trái, phiếu giá cố định bên phải; xếp một cột trên điện thoại */
+/* Layout: ba thẻ (Món, Nguyên liệu, Chi phí tháng) trong một cột hẹp, ưu tiên màn hình điện thoại */
 :root{
   --bg:#f3f5f1; --surface:#ffffff; --ink:#18241d; --muted:#5d6b62; --line:#d5dcd4;
   --accent:#1f5a3a; --accent-ink:#ffffff; --accent-soft:#e2ede5; --warn:#a4501a; --warn-soft:#f7e8da;
@@ -28,287 +28,256 @@
   --accent:#7cc79a; --accent-ink:#0c1a12; --accent-soft:#1d3327; --warn:#e9a368; --warn-soft:#3a2a1b; color-scheme:dark }
 
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:24px 48px}
-.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
-header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
-h1{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.15;margin:0;text-wrap:balance}
-.sub{color:var(--muted);margin:4px 0 0;max-width:60ch}
-.presets{display:flex;flex-wrap:wrap;gap:8px}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:24px 56px;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.15;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:500;font-size:18px;margin:0}
+.sub,.hint{color:var(--muted);margin:0;font-size:13.5px;max-width:62ch}
 button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 12px}
 button:hover{border-color:var(--accent)}
 button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.x{padding:0;width:38px;height:38px;color:var(--muted);flex:none}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tabs{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.tabs button{flex:1;border:0;border-radius:0;background:transparent;font-weight:500;padding:10px 6px}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
 .note{background:var(--accent-soft);border-radius:6px;padding:8px 12px;font-size:13.5px}
-.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
-.col{display:flex;flex-direction:column;gap:20px;min-width:0}
-section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
-h2{font-family:var(--display);font-weight:500;font-size:18px;margin:0}
-.hint{color:var(--muted);font-size:13px;margin:0}
-.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted);font-weight:500;min-width:0}
-input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.status{font-size:13px;color:var(--muted)}
+.panel{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0}
+.pad{padding:14px;display:flex;flex-direction:column;gap:12px}
+label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);font-weight:500;min-width:0}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0;height:38px}
 input.num{text-align:right;font-variant-numeric:tabular-nums}
-.rows{display:flex;flex-direction:column;gap:8px}
-.row{display:grid;grid-template-columns:minmax(0,1.6fr) 150px minmax(0,1fr) 36px;gap:8px}
-.row button{padding:0;color:var(--muted)}
-.sumline{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;font-size:13.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:10px}
-.sumline b{color:var(--ink);font-variant-numeric:tabular-nums}
-.seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
-.seg button{flex:1;border:0;border-radius:0;background:var(--bg);font-size:13.5px}
-.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
-.result{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);border-color:var(--accent)}
-.price-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.price{font-family:var(--display);font-weight:700;font-size:clamp(32px,6vw,44px);line-height:1.1;color:var(--accent);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.price small{font-family:var(--body);font-size:14px;font-weight:500;color:var(--muted)}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.fields .wide{grid-column:1/-1}
+
+summary{list-style:none;cursor:pointer;padding:14px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+summary::-webkit-details-marker{display:none}
+.s-name{font-weight:600;font-size:16px;overflow-wrap:anywhere;min-width:0}
+.s-meta{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.s-price{font-family:var(--display);font-weight:700;font-size:22px;color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
+details[open]>summary{border-bottom:1px solid var(--line)}
+.chip{display:inline-block;background:var(--warn-soft);color:var(--warn);border-radius:99px;padding:1px 8px;font-size:12px;font-weight:600;margin-left:6px}
+
+.sec{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.rrow{display:grid;grid-template-columns:minmax(0,1fr) 84px 34px 92px 38px;gap:8px;align-items:center}
+.unit{color:var(--muted);font-size:13px}
+.amt{text-align:right;font-variant-numeric:tabular-nums;font-weight:500;white-space:nowrap}
 dl{margin:0;display:flex;flex-direction:column}
 dl div{display:flex;justify-content:space-between;gap:16px;padding:7px 0;border-bottom:1px solid var(--line)}
 dl div:last-child{border-bottom:0}
 dt{color:var(--muted)} dd{margin:0;font-variant-numeric:tabular-nums;text-align:right;font-weight:500}
 dl .strong dt,dl .strong dd{color:var(--ink);font-weight:600}
-.alert{background:var(--warn-soft);color:var(--warn);border-radius:6px;padding:8px 12px;font-size:13.5px;font-weight:500}
 .neg{color:var(--warn)}
-.tablebox{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:14px}
-th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
-th{font-size:12px;color:var(--muted);font-weight:600}
-th:first-child,td:first-child{text-align:left}
-tr.cur td{background:var(--accent-soft);font-weight:600}
-.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-#copied{font-size:13px;color:var(--muted)}
-@media (max-width:820px){
-  .grid{grid-template-columns:minmax(0,1fr)}
-  .result{position:static;order:-1}
-  .row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px}
-  .row .rn{grid-column:1/-1}
-}
 
-@media (max-width:820px){input,select,button{font-size:16px}}
-body{padding-top:calc(24px + env(safe-area-inset-top,0px));padding-bottom:calc(48px + env(safe-area-inset-bottom,0px));-webkit-text-size-adjust:100%}
+.irow{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) 84px 76px 70px 38px;gap:8px;align-items:end}
+.icost{grid-column:1/-1;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.icost b{color:var(--ink)}
+.orow{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) 38px;gap:8px;align-items:end}
+@media (max-width:620px){
+  input,select,button{font-size:16px}
+  .rrow{grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr) 38px}
+  .rrow select{grid-column:1/-1}
+  .irow{grid-template-columns:repeat(3,minmax(0,1fr)) 38px}
+  .irow .iname{grid-column:1/-1}
+  .irow .iprice{grid-column:1/3}
+}
+body{padding-top:calc(24px + env(safe-area-inset-top,0px));padding-bottom:calc(56px + env(safe-area-inset-bottom,0px))}
 </style>
 </head>
 <body>
 
 <div class="wrap">
   <header>
-    <div>
-      <h1>Bảng tính giá bán</h1>
-      <p class="sub">Nhập chi phí, mức lợi nhuận mong muốn, phí kênh bán và VAT. Giá bán, lợi nhuận và điểm hòa vốn cập nhật ngay khi anh thay đổi số.</p>
-    </div>
-    <div class="presets">
-      <button type="button" id="pCoffee">Mẫu: Cà phê đóng túi</button>
-      <button type="button" id="pVideo">Mẫu: Video quảng bá</button>
-      <button type="button" id="pBlank">Làm mới</button>
-    </div>
+    <h1>Bảng tính giá bán</h1>
+    <p class="sub">Tính giá cốt từng món theo định lượng nguyên liệu, rồi ra giá bán theo tỷ lệ giá cốt anh đặt.</p>
   </header>
-  <div class="note" id="sampleNote">Đang hiển thị số liệu ví dụ. Sửa trực tiếp vào các ô để tính cho sản phẩm của anh.</div>
-
-  <div class="grid">
-    <div class="col">
-      <section>
-        <h2>Sản phẩm</h2>
-        <div class="fields">
-          <label style="grid-column:span 2">Tên sản phẩm / dịch vụ<input id="name" type="text"></label>
-          <label>Đơn vị tính<input id="unit" type="text"></label>
-          <label>Số lượng dự kiến<input id="qty" class="num" inputmode="numeric"></label>
-        </div>
-      </section>
-
-      <section>
-        <h2>Chi phí</h2>
-        <p class="hint">“Theo từng sản phẩm” là chi phí tăng theo số lượng (nguyên liệu, bao bì). “Cố định cả lô” là khoản chi một lần, chia đều cho số lượng (thiết kế, thuê thiết bị, ê-kíp).</p>
-        <div class="rows" id="rows"></div>
-        <div><button type="button" id="addRow">+ Thêm khoản chi</button></div>
-        <div class="fields">
-          <label>Chi phí quản lý chung (%)<input id="oh" class="num" inputmode="decimal"></label>
-          <label>Dự phòng rủi ro (%)<input id="dp" class="num" inputmode="decimal"></label>
-        </div>
-        <div class="sumline">
-          <span>Biến phí / <span class="u"></span>: <b id="sV"></b></span>
-          <span>Định phí cả lô: <b id="sF"></b></span>
-          <span>Giá vốn / <span class="u"></span>: <b id="sC"></b></span>
-        </div>
-      </section>
-
-      <section>
-        <h2>Lợi nhuận, kênh bán và thuế</h2>
-        <div class="seg" role="group" aria-label="Cách tính lợi nhuận">
-          <button type="button" id="mMarkup">% trên giá vốn</button>
-          <button type="button" id="mMargin">% trên giá bán</button>
-        </div>
-        <div class="fields">
-          <label>Lợi nhuận mong muốn (%)<input id="m" class="num" inputmode="decimal"></label>
-          <label>Phí kênh bán / hoa hồng (%)<input id="fee" class="num" inputmode="decimal"></label>
-          <label>Thuế GTGT
-            <select id="vat"><option value="0">Không tính</option><option value="5">5%</option><option value="8">8%</option><option value="10">10%</option></select>
-          </label>
-          <label>Làm tròn giá lên
-            <select id="round"><option value="0">Không làm tròn</option><option value="500">500 đ</option><option value="1000">1.000 đ</option><option value="5000">5.000 đ</option><option value="10000">10.000 đ</option><option value="100000">100.000 đ</option><option value="1000000">1.000.000 đ</option></select>
-          </label>
-        </div>
-        <p class="hint">Phí kênh bán tính trên giá chưa VAT: phí sàn thương mại điện tử, hoa hồng đại lý, chiết khấu cho điểm bán. Thuế suất GTGT tùy mặt hàng, anh chọn theo hóa đơn thực tế.</p>
-      </section>
-
-      <section>
-        <h2>So sánh các mức lợi nhuận</h2>
-        <div class="tablebox"><table>
-          <thead><tr><th>Mức lợi nhuận</th><th>Giá bán</th><th>Lãi / đơn vị</th><th>Tổng lãi cả lô</th></tr></thead>
-          <tbody id="scen"></tbody>
-        </table></div>
-      </section>
-    </div>
-
-    <section class="result" aria-live="polite">
-      <div>
-        <div class="price-label" id="priceLabel">Giá bán đề xuất</div>
-        <div class="price"><span id="price"></span> <small id="perUnit"></small></div>
-      </div>
-      <div class="alert" id="alert" hidden></div>
-      <dl>
-        <div><dt>Giá vốn</dt><dd id="rC"></dd></div>
-        <div><dt>Giá bán chưa VAT</dt><dd id="rNet"></dd></div>
-        <div><dt>Thuế GTGT</dt><dd id="rVat"></dd></div>
-        <div><dt>Phí kênh bán</dt><dd id="rFee"></dd></div>
-        <div class="strong"><dt>Lãi / đơn vị</dt><dd id="rP"></dd></div>
-        <div><dt>Biên lợi nhuận trên giá bán</dt><dd id="rMg"></dd></div>
-        <div><dt>Tỷ lệ lãi trên giá vốn</dt><dd id="rMk"></dd></div>
-      </dl>
-      <dl>
-        <div><dt>Doanh thu cả lô (chưa VAT)</dt><dd id="rRev"></dd></div>
-        <div><dt>Tổng chi phí cả lô</dt><dd id="rCost"></dd></div>
-        <div class="strong"><dt>Tổng lãi cả lô</dt><dd id="rTP"></dd></div>
-        <div><dt>Điểm hòa vốn</dt><dd id="rBE"></dd></div>
-      </dl>
-      <div class="actions">
-        <button type="button" class="primary" id="copy">Sao chép kết quả</button>
-        <span id="copied" role="status"></span>
-      </div>
-    </section>
+  <div class="tabs" role="group" aria-label="Chọn phần">
+    <button type="button" data-act="tab" data-v="items">Món</button>
+    <button type="button" data-act="tab" data-v="ings">Nguyên liệu</button>
+    <button type="button" data-act="tab" data-v="ops">Chi phí tháng</button>
   </div>
+  <div class="note" id="sampleNote">Đang hiển thị số liệu ví dụ. Sửa trực tiếp, hoặc bấm “Xóa hết để nhập mới” trong thẻ Chi phí tháng.</div>
+
+  <div class="panel" id="p-items"></div>
+  <div class="panel" id="p-ings" hidden></div>
+  <div class="panel" id="p-ops" hidden></div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt = n => isFinite(n) ? Math.round(n).toLocaleString('vi-VN') : '—';
-const dong = n => isFinite(n) ? fmt(n) + ' đ' : '—';
-const pct = n => isFinite(n) ? (n*100).toLocaleString('vi-VN',{maximumFractionDigits:1}) + '%' : '—';
-const num = s => { const v = parseFloat(String(s).replace(/\./g,'').replace(',','.').replace(/[^\d.\-]/g,'')); return isFinite(v) ? v : 0; };
+const dong = n => isFinite(n) ? fmt(n)+' đ' : '—';
+const dec = n => isFinite(n) ? n.toLocaleString('vi-VN',{maximumFractionDigits:n<100?2:0}) : '—';
+const pct = n => isFinite(n) ? (n*100).toLocaleString('vi-VN',{maximumFractionDigits:1})+'%' : '—';
+const qstr = n => n ? String(n).replace('.',',') : '';
+function num(s){ s=String(s).trim(); if(/^\d+\.\d{1,2}$/.test(s)) return parseFloat(s);
+  const v=parseFloat(s.replace(/\./g,'').replace(',','.').replace(/[^\d.\-]/g,'')); return isFinite(v)?v:0; }
 
-const PRESETS = {
-  coffee:{name:'Cà phê Arabica rang xay 250g',unit:'túi',qty:500,oh:8,dp:3,mode:'markup',m:35,fee:12,vat:8,round:1000,rows:[
-    {n:'Cà phê nhân Arabica',t:'v',a:62000},{n:'Rang, xay, đóng gói',t:'v',a:12000},{n:'Túi zip và tem nhãn',t:'v',a:6500},
-    {n:'Thiết kế bao bì',t:'f',a:8000000},{n:'Chụp ảnh sản phẩm',t:'f',a:3000000}]},
-  video:{name:'Video quảng bá 3 phút',unit:'video',qty:1,oh:10,dp:5,mode:'margin',m:30,fee:0,vat:8,round:100000,rows:[
-    {n:'Kịch bản',t:'f',a:3000000},{n:'Ê-kíp quay 2 ngày',t:'f',a:12000000},{n:'Thiết bị, flycam',t:'f',a:5000000},
-    {n:'Hậu kỳ, dựng, màu',t:'f',a:6000000},{n:'Đi lại, ăn ở',t:'f',a:2500000}]},
-  blank:{name:'',unit:'sản phẩm',qty:1,oh:0,dp:0,mode:'markup',m:30,fee:0,vat:8,round:1000,rows:[{n:'',t:'v',a:0}]}
-};
-const KEY = 'tinh-gia-ban-v1';
-let S, sample = true;
-try { const saved = JSON.parse(localStorage.getItem(KEY)); if (saved && saved.rows) { S = saved; sample = false; } } catch(e){}
-if (!S) S = JSON.parse(JSON.stringify(PRESETS.coffee));
+const SAMPLE = {tab:'items',round:1000,defTarget:30,cups:3000,
+  ings:[
+    {id:1,n:'Cà phê Robusta rang',price:180000,pack:1000,unit:'g',loss:0},
+    {id:2,n:'Cà phê Arabica rang',price:320000,pack:1000,unit:'g',loss:0},
+    {id:3,n:'Sữa đặc',price:24000,pack:380,unit:'g',loss:0},
+    {id:4,n:'Sữa tươi',price:34000,pack:1000,unit:'ml',loss:0},
+    {id:5,n:'Đường nước',price:20000,pack:1000,unit:'ml',loss:0},
+    {id:6,n:'Đá viên',price:2000,pack:1000,unit:'g',loss:10},
+    {id:7,n:'Ly nhựa có nắp',price:45000,pack:50,unit:'cái',loss:0},
+    {id:8,n:'Ống hút',price:15000,pack:100,unit:'cái',loss:0},
+    {id:9,n:'Túi zip 250g có tem',price:350000,pack:100,unit:'cái',loss:0}],
+  items:[
+    {n:'Cà phê đen đá',target:30,price:0,open:false,rows:[{ing:1,q:20},{ing:5,q:10},{ing:6,q:150},{ing:7,q:1},{ing:8,q:1}]},
+    {n:'Cà phê sữa đá',target:30,price:0,open:true,rows:[{ing:1,q:20},{ing:3,q:30},{ing:6,q:150},{ing:7,q:1},{ing:8,q:1}]},
+    {n:'Bạc xỉu',target:30,price:0,open:false,rows:[{ing:2,q:15},{ing:3,q:30},{ing:4,q:60},{ing:6,q:120},{ing:7,q:1},{ing:8,q:1}]},
+    {n:'Arabica rang xay túi 250g',target:65,price:0,open:false,rows:[{ing:2,q:250},{ing:9,q:1}]}],
+  ops:[{n:'Mặt bằng',a:6000000},{n:'Lương nhân viên',a:12000000},{n:'Điện, nước, internet',a:2500000}]};
+const BLANK = {tab:'ings',round:1000,defTarget:30,cups:0,ings:[{id:1,n:'',price:0,pack:0,unit:'g',loss:0}],items:[],ops:[]};
+const KEY='tinh-gia-ban-v2';
+let S, sample=true, msg='';
+try{ const sv=JSON.parse(localStorage.getItem(KEY)); if(sv&&sv.ings&&sv.items){S=sv;sample=false;} }catch(e){}
+if(!S) S=JSON.parse(JSON.stringify(SAMPLE));
 
-function calc(s, mOverride){
-  const k = (s.oh + s.dp)/100, qty = Math.max(s.qty,1), f = s.fee/100, vat = s.vat/100;
-  const m = (mOverride ?? s.m)/100;
-  const V = s.rows.filter(r=>r.t==='v').reduce((a,r)=>a+r.a,0);
-  const F = s.rows.filter(r=>r.t==='f').reduce((a,r)=>a+r.a,0);
-  const v1 = V*(1+k), F1 = F*(1+k), c = v1 + F1/qty;
-  const denom = s.mode==='markup' ? (1-f) : (1-f-m);
-  const out = {V,F,v1,F1,c,qty,ok:denom>0};
-  if (!out.ok) return out;
-  let gross = (s.mode==='markup' ? c*(1+m)/denom : c/denom) * (1+vat);
-  if (s.round>0) gross = Math.ceil((gross-1e-6)/s.round)*s.round;
-  const net = gross/(1+vat), feeAmt = net*f, profit = net-feeAmt-c, contrib = net-feeAmt-v1;
-  return Object.assign(out,{gross,net,vatAmt:gross-net,feeAmt,profit,
-    margin:net?profit/net:NaN, markup:c?profit/c:NaN,
-    rev:net*qty, cost:c*qty+feeAmt*qty, tp:profit*qty,
-    be: F1<=0 ? 0 : (contrib>0 ? Math.ceil(F1/contrib-1e-9) : null)});
+const ingBy = id => S.ings.find(g=>g.id==id);
+const ucost = g => (g && g.pack>0 && g.loss<100) ? g.price/(g.pack*(1-g.loss/100)) : 0;
+const opsTotal = () => S.ops.reduce((a,o)=>a+o.a,0);
+const roundUp = v => S.round>0 ? Math.ceil((v-1e-6)/S.round)*S.round : Math.round(v);
+function calc(it){
+  const cogs = it.rows.reduce((a,r)=>a+ucost(ingBy(r.ing))*r.q,0);
+  const sug = (cogs>0 && it.target>0) ? roundUp(cogs/(it.target/100)) : 0;
+  const price = it.price>0 ? it.price : sug;
+  const gross = price-cogs, F=opsTotal(), op = S.cups>0 ? F/S.cups : 0;
+  return {cogs,sug,price,ratio:price>0?cogs/price:NaN,gross,op,net:gross-op,
+    be:(F>0&&gross>0)?Math.ceil(F/gross-1e-9):null, over:it.price>0 && it.target>0 && cogs/price>it.target/100+0.005};
 }
 
-function renderRows(){
-  const box = $('rows'); box.innerHTML = '';
-  S.rows.forEach((r,i)=>{
-    const d = document.createElement('div'); d.className='row';
-    d.innerHTML = `<input class="rn" id="rn${i}" type="text" placeholder="Tên khoản chi" aria-label="Tên khoản chi">
-      <select id="rt${i}" aria-label="Loại chi phí"><option value="v">Theo từng sản phẩm</option><option value="f">Cố định cả lô</option></select>
-      <input class="num" id="ra${i}" inputmode="numeric" aria-label="Số tiền (đồng)">
-      <button type="button" aria-label="Xóa khoản chi" title="Xóa">✕</button>`;
-    const [n,t,a,x] = d.children;
-    n.value = r.n; t.value = r.t; a.value = r.a ? fmt(r.a) : '';
-    n.oninput = () => { r.n = n.value; touch(); };
-    t.onchange = () => { r.t = t.value; touch(); };
-    a.oninput = () => { r.a = Math.max(num(a.value),0); touch(); };
-    a.onblur = () => { a.value = r.a ? fmt(r.a) : ''; };
-    x.onclick = () => { S.rows.splice(i,1); if(!S.rows.length) S.rows.push({n:'',t:'v',a:0}); renderRows(); touch(); };
-    box.appendChild(d);
+function renderItems(){
+  const opts = sel => S.ings.map(g=>`<option value="${g.id}"${g.id==sel?' selected':''}>${esc(g.n||'(chưa đặt tên)')}</option>`).join('');
+  $('p-items').innerHTML = `
+    <div class="bar"><button type="button" class="primary" data-act="addItem">+ Thêm món</button>
+      <button type="button" data-act="copy">Sao chép bảng giá</button><span class="status" id="status" role="status">${esc(msg)}</span></div>
+    ${S.items.length?'':'<p class="hint">Chưa có món nào. Nhập nguyên liệu ở thẻ Nguyên liệu, rồi bấm “Thêm món” để lập công thức định lượng.</p>'}
+    ${S.items.map((it,i)=>`<details class="card" data-i="${i}"${it.open?' open':''}>
+      <summary><span style="min-width:0"><span class="s-name" id="sn${i}"></span><span id="sw${i}"></span><br><span class="s-meta" id="sm${i}"></span></span><span class="s-price" id="sp${i}"></span></summary>
+      <div class="pad">
+        <div class="fields">
+          <label class="wide">Tên món<input type="text" id="in${i}" data-f="item" data-i="${i}" data-k="n" data-t="txt" value="${esc(it.n)}"></label>
+          <label>Tỷ lệ giá cốt mục tiêu (%)<input class="num" inputmode="decimal" id="it${i}" data-f="item" data-i="${i}" data-k="target" value="${qstr(it.target)}"></label>
+          <label>Giá bán thực tế (đ)<input class="num" inputmode="numeric" id="ip${i}" data-f="item" data-i="${i}" data-k="price" data-t="money" placeholder="Để trống = giá đề xuất" value="${it.price?fmt(it.price):''}"></label>
+        </div>
+        <div class="sec">Công thức định lượng cho 1 món</div>
+        ${it.rows.map((r,j)=>`<div class="rrow">
+          <select id="rs${i}_${j}" aria-label="Nguyên liệu" data-f="row" data-i="${i}" data-j="${j}" data-k="ing">${opts(r.ing)}</select>
+          <input class="num" inputmode="decimal" id="rq${i}_${j}" aria-label="Định lượng" data-f="row" data-i="${i}" data-j="${j}" data-k="q" value="${qstr(r.q)}">
+          <span class="unit">${esc(ingBy(r.ing)?.unit||'')}</span>
+          <span class="amt" id="rm${i}_${j}"></span>
+          <button type="button" class="x" aria-label="Xóa nguyên liệu khỏi công thức" data-act="delRow" data-i="${i}" data-j="${j}">✕</button></div>`).join('')}
+        <div><button type="button" data-act="addRow" data-i="${i}">+ Thêm nguyên liệu vào công thức</button></div>
+        <dl>
+          <div class="strong"><dt>Giá cốt nguyên liệu</dt><dd id="d${i}cogs"></dd></div>
+          <div><dt>Giá bán đề xuất</dt><dd id="d${i}sug"></dd></div>
+          <div class="strong"><dt>Giá bán đang tính</dt><dd id="d${i}price"></dd></div>
+          <div><dt>Tỷ lệ giá cốt trên giá bán</dt><dd id="d${i}ratio"></dd></div>
+          <div><dt>Lãi gộp mỗi món</dt><dd id="d${i}gross"></dd></div>
+          <div><dt>Chi phí vận hành chia cho mỗi món</dt><dd id="d${i}op"></dd></div>
+          <div class="strong"><dt>Lãi sau chi phí vận hành</dt><dd id="d${i}net"></dd></div>
+          <div><dt>Số món cần bán mỗi tháng để đủ chi phí vận hành</dt><dd id="d${i}be"></dd></div>
+        </dl>
+        <div class="bar"><button type="button" data-act="dupItem" data-i="${i}">Nhân bản món</button><button type="button" data-act="delItem" data-i="${i}">Xóa món</button></div>
+      </div></details>`).join('')}`;
+}
+function renderIngs(){
+  const units=['g','ml','cái','gói','quả','kg','lít'];
+  $('p-ings').innerHTML = `
+    <p class="hint">Nhập giá mua và quy cách của từng nguyên liệu. Ví dụ: cà phê rang giá 180.000 đ cho 1.000 g. Hao hụt là phần không dùng được (rơi vãi, đá tan, hàng lỗi).</p>
+    ${S.ings.map((g,i)=>`<div class="card pad"><div class="irow">
+      <label class="iname">Tên nguyên liệu<input type="text" id="gn${i}" data-f="ing" data-i="${i}" data-k="n" data-t="txt" value="${esc(g.n)}"></label>
+      <label class="iprice">Giá mua (đ)<input class="num" inputmode="numeric" id="gp${i}" data-f="ing" data-i="${i}" data-k="price" data-t="money" value="${g.price?fmt(g.price):''}"></label>
+      <label>Quy cách<input class="num" inputmode="decimal" id="gk${i}" data-f="ing" data-i="${i}" data-k="pack" value="${g.pack?dec(g.pack):''}"></label>
+      <label>Đơn vị<select id="gu${i}" data-f="ing" data-i="${i}" data-k="unit" data-t="txt">${units.map(u=>`<option${u===g.unit?' selected':''}>${u}</option>`).join('')}</select></label>
+      <label>Hao hụt %<input class="num" inputmode="decimal" id="gl${i}" data-f="ing" data-i="${i}" data-k="loss" value="${qstr(g.loss)}"></label>
+      <button type="button" class="x" aria-label="Xóa nguyên liệu" data-act="delIng" data-i="${i}">✕</button>
+      <div class="icost" id="gc${i}"></div></div></div>`).join('')}
+    <div class="bar"><button type="button" class="primary" data-act="addIng">+ Thêm nguyên liệu</button><span class="status" role="status">${esc(msg)}</span></div>`;
+}
+function renderOps(){
+  $('p-ops').innerHTML = `
+    <div class="card pad"><h2>Chi phí vận hành mỗi tháng</h2>
+      <p class="hint">Các khoản không nằm trong công thức món: mặt bằng, lương, điện nước. App chia đều cho số món bán ra để anh thấy lãi còn lại sau vận hành.</p>
+      ${S.ops.map((o,i)=>`<div class="orow">
+        <label>Khoản chi<input type="text" id="on${i}" data-f="op" data-i="${i}" data-k="n" data-t="txt" value="${esc(o.n)}"></label>
+        <label>Số tiền mỗi tháng (đ)<input class="num" inputmode="numeric" id="oa${i}" data-f="op" data-i="${i}" data-k="a" data-t="money" value="${o.a?fmt(o.a):''}"></label>
+        <button type="button" class="x" aria-label="Xóa khoản chi" data-act="delOp" data-i="${i}">✕</button></div>`).join('')}
+      <div><button type="button" data-act="addOp">+ Thêm khoản chi</button></div>
+      <div class="fields"><label>Số món bán ra mỗi tháng (ước tính)<input class="num" inputmode="numeric" id="cups" data-f="set" data-k="cups" data-t="money" value="${S.cups?fmt(S.cups):''}"></label></div>
+      <dl><div><dt>Tổng chi phí vận hành tháng</dt><dd id="opT"></dd></div><div class="strong"><dt>Chia cho mỗi món</dt><dd id="opP"></dd></div></dl>
+    </div>
+    <div class="card pad"><h2>Cách ra giá</h2>
+      <div class="fields">
+        <label>Tỷ lệ giá cốt mặc định cho món mới (%)<input class="num" inputmode="decimal" id="defT" data-f="set" data-k="defTarget" value="${qstr(S.defTarget)}"></label>
+        <label>Làm tròn giá bán lên<select id="rnd" data-f="set" data-k="round">${[[0,'Không làm tròn'],[500,'500 đ'],[1000,'1.000 đ'],[5000,'5.000 đ'],[10000,'10.000 đ']].map(([v,t])=>`<option value="${v}"${v==S.round?' selected':''}>${t}</option>`).join('')}</select></label>
+      </div>
+      <p class="hint">Giá bán đề xuất = giá cốt nguyên liệu chia cho tỷ lệ giá cốt. Ví dụ giá cốt 6.900 đ, tỷ lệ 30% thì giá bán là 23.000 đ.</p>
+    </div>
+    <div class="bar"><button type="button" data-act="sample">Nạp lại số liệu ví dụ</button><button type="button" data-act="blank">Xóa hết để nhập mới</button></div>`;
+}
+function refresh(){
+  $('sampleNote').hidden=!sample;
+  document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S.tab));
+  ['items','ings','ops'].forEach(t=>$('p-'+t).hidden=S.tab!==t);
+  const set=(id,v,neg)=>{const e=$(id); if(e){e.textContent=v; e.classList.toggle('neg',!!neg);}};
+  S.items.forEach((it,i)=>{ const r=calc(it);
+    set('sn'+i,it.n||'(chưa đặt tên)'); set('sp'+i,r.price>0?dong(r.price):'—');
+    set('sm'+i,`Giá cốt ${dong(r.cogs)} · ${pct(r.ratio)} giá bán`);
+    const w=$('sw'+i); if(w) w.innerHTML = r.over?'<span class="chip">Vượt mục tiêu</span>':'';
+    it.rows.forEach((x,j)=>set(`rm${i}_${j}`,dong(ucost(ingBy(x.ing))*x.q)));
+    set(`d${i}cogs`,dong(r.cogs)); set(`d${i}sug`,r.sug?dong(r.sug):'—'); set(`d${i}price`,r.price?dong(r.price):'—');
+    set(`d${i}ratio`,pct(r.ratio),r.over); set(`d${i}gross`,r.price?dong(r.gross):'—',r.gross<0);
+    set(`d${i}op`,S.cups>0?dong(r.op):'Chưa nhập'); set(`d${i}net`,(r.price&&S.cups>0)?dong(r.net):'—',r.net<0);
+    set(`d${i}be`,r.be?fmt(r.be):(opsTotal()>0?'Không đạt':'—'),opsTotal()>0&&!r.be);
   });
+  S.ings.forEach((g,i)=>{const e=$('gc'+i); if(e) e.innerHTML = g.pack>0&&g.price>0 ? `Giá cốt: <b>${dec(ucost(g))} đ / ${esc(g.unit)}</b>` : 'Nhập giá mua và quy cách để tính giá mỗi đơn vị.';});
+  set('opT',dong(opsTotal())); set('opP',S.cups>0?dong(opsTotal()/S.cups):'Chưa nhập số món');
 }
-function fill(){
-  $('name').value=S.name; $('unit').value=S.unit; $('qty').value=fmt(S.qty);
-  ['oh','dp','m','fee'].forEach(k=>$(k).value=String(S[k]).replace('.',','));
-  $('vat').value=S.vat; $('round').value=S.round; renderRows(); render();
+function renderAll(){ renderItems(); renderIngs(); renderOps(); refresh(); msg=''; }
+function save(){ try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){} }
+function touch(structural){ sample=false; save(); structural?renderAll():refresh(); }
+
+document.addEventListener('input',e=>{ const t=e.target,d=t.dataset; if(!d.f) return;
+  const o = d.f==='ing'?S.ings[d.i] : d.f==='item'?S.items[d.i] : d.f==='row'?S.items[d.i].rows[d.j] : d.f==='op'?S.ops[d.i] : S;
+  o[d.k] = d.t==='txt' ? t.value : (t.tagName==='SELECT' ? +t.value : Math.max(num(t.value),0));
+  touch(t.tagName==='SELECT');
+});
+document.addEventListener('focusout',e=>{ const t=e.target; if(t.dataset&&t.dataset.t==='money'){ const v=num(t.value); t.value=v?fmt(v):''; } });
+document.addEventListener('toggle',e=>{ const d=e.target; if(d.tagName==='DETAILS'&&S.items[d.dataset.i]){ S.items[d.dataset.i].open=d.open; save(); } },true);
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b) return; const a=b.dataset.act,i=+b.dataset.i,j=+b.dataset.j;
+  if(a==='tab'){ S.tab=b.dataset.v; save(); renderAll(); return; }
+  if(a==='sample'||a==='blank'){ S=JSON.parse(JSON.stringify(a==='sample'?SAMPLE:BLANK)); sample=a==='sample'; try{localStorage.removeItem(KEY);}catch(x){} if(!sample) save(); renderAll(); return; }
+  if(a==='copy'){ copyAll(); return; }
+  if(a==='addIng'){ S.ings.push({id:Math.max(0,...S.ings.map(g=>g.id))+1,n:'',price:0,pack:0,unit:'g',loss:0}); touch(true); $('gn'+(S.ings.length-1)).focus(); return; }
+  if(a==='delIng'){ const id=S.ings[i].id, used=S.items.filter(it=>it.rows.some(r=>r.ing==id)).length;
+    if(used){ msg=`“${S.ings[i].n||'Nguyên liệu'}” đang dùng trong ${used} món. Gỡ khỏi công thức trước khi xóa.`; renderAll(); return; }
+    S.ings.splice(i,1); touch(true); return; }
+  if(a==='addItem'){ if(!S.ings.length){ msg='Cần nhập nguyên liệu trước.'; S.tab='ings'; renderAll(); return; }
+    S.items.push({n:'',target:S.defTarget||30,price:0,open:true,rows:[{ing:S.ings[0].id,q:0}]}); touch(true); $('in'+(S.items.length-1)).focus(); return; }
+  if(a==='dupItem'){ const c=JSON.parse(JSON.stringify(S.items[i])); c.n=(c.n||'Món')+' (bản sao)'; S.items.splice(i+1,0,c); touch(true); return; }
+  if(a==='delItem'){ S.items.splice(i,1); touch(true); return; }
+  if(a==='addRow'){ if(!S.ings.length) return; S.items[i].rows.push({ing:S.ings[0].id,q:0}); touch(true); $(`rs${i}_${S.items[i].rows.length-1}`).focus(); return; }
+  if(a==='delRow'){ S.items[i].rows.splice(j,1); touch(true); return; }
+  if(a==='addOp'){ S.ops.push({n:'',a:0}); touch(true); $('on'+(S.ops.length-1)).focus(); return; }
+  if(a==='delOp'){ S.ops.splice(i,1); touch(true); return; }
+});
+function copyAll(){
+  const t=['BẢNG GIÁ THEO ĐỊNH LƯỢNG','',...S.items.flatMap(it=>{const r=calc(it); return [
+    `${it.n||'(chưa đặt tên)'}: giá bán ${dong(r.price)}, giá cốt ${dong(r.cogs)} (${pct(r.ratio)}), lãi gộp ${dong(r.gross)}`,
+    ...it.rows.map(x=>{const g=ingBy(x.ing); return `  - ${g?.n||''}: ${qstr(x.q)||0} ${g?.unit||''} = ${dong(ucost(g)*x.q)}`;}),''];})].join('\n');
+  const say=m=>{const s=$('status'); if(s){s.textContent=m; setTimeout(()=>{s.textContent='';},2500);}};
+  const fb=()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');say('Đã sao chép');}catch(e){say('Không sao chép được');}a.remove();};
+  try{navigator.clipboard.writeText(t).then(()=>say('Đã sao chép'),fb);}catch(e){fb();}
 }
-function touch(){ sample=false; try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){} render(); }
-
-function render(){
-  const r = calc(S), u = S.unit || 'đơn vị';
-  $('sampleNote').hidden = !sample;
-  document.querySelectorAll('.u').forEach(e=>e.textContent=u);
-  $('mMarkup').setAttribute('aria-pressed',S.mode==='markup'); $('mMargin').setAttribute('aria-pressed',S.mode==='margin');
-  $('sV').textContent=dong(r.v1); $('sF').textContent=dong(r.F1); $('sC').textContent=dong(r.c);
-  $('priceLabel').textContent = 'Giá bán đề xuất' + (S.vat>0?' (đã gồm VAT)':'');
-  $('perUnit').textContent = '/ ' + u;
-  const al = $('alert'); al.hidden = true;
-  const set = (id,v,neg) => { const e=$(id); e.textContent=v; e.classList.toggle('neg',!!neg); };
-  if (!r.ok){
-    al.hidden=false; al.textContent = S.mode==='margin'
-      ? 'Lợi nhuận trên giá bán cộng phí kênh bán phải nhỏ hơn 100%. Hãy giảm một trong hai tỷ lệ.'
-      : 'Phí kênh bán phải nhỏ hơn 100%.';
-    $('price').textContent='—';
-    ['rNet','rVat','rFee','rP','rMg','rMk','rRev','rCost','rTP','rBE'].forEach(i=>set(i,'—'));
-    set('rC',dong(r.c)); $('scen').innerHTML=''; return;
-  }
-  if (r.c<=0){ al.hidden=false; al.textContent='Chưa có khoản chi nào. Nhập chi phí để tính giá bán.'; }
-  else if (r.be===null){ al.hidden=false; al.textContent='Giá bán chưa đủ bù biến phí và phí kênh bán nên không thể hòa vốn.'; }
-  else if (r.be>r.qty){ al.hidden=false; al.textContent=`Cần bán ${fmt(r.be)} ${u} mới hòa vốn, nhiều hơn số lượng dự kiến (${fmt(r.qty)}).`; }
-  $('price').textContent=dong(r.gross);
-  set('rC',dong(r.c)); set('rNet',dong(r.net)); set('rVat',dong(r.vatAmt)); set('rFee',dong(r.feeAmt));
-  set('rP',dong(r.profit),r.profit<0); set('rMg',pct(r.margin),r.margin<0); set('rMk',pct(r.markup),r.markup<0);
-  set('rRev',dong(r.rev)); set('rCost',dong(r.cost)); set('rTP',dong(r.tp),r.tp<0);
-  set('rBE', r.be===0 ? 'Không có định phí' : r.be===null ? 'Không đạt' : fmt(r.be)+' '+u, r.be===null);
-  const levels = [...new Set([10,20,30,40,50,S.m])].sort((a,b)=>a-b);
-  $('scen').innerHTML = levels.map(l=>{ const x=calc(S,l);
-    return `<tr class="${l===S.m?'cur':''}"><td>${String(l).replace('.',',')}%${l===S.m?' (đang chọn)':''}</td>` +
-      (x.ok?`<td>${dong(x.gross)}</td><td>${dong(x.profit)}</td><td>${dong(x.tp)}</td>`:'<td>—</td><td>—</td><td>—</td>')+'</tr>'; }).join('');
-}
-
-$('name').oninput=e=>{S.name=e.target.value;touch();};
-$('unit').oninput=e=>{S.unit=e.target.value;touch();};
-$('qty').oninput=e=>{S.qty=Math.max(Math.round(num(e.target.value)),1);touch();};
-$('qty').onblur=e=>{e.target.value=fmt(S.qty);};
-['oh','dp','m','fee'].forEach(k=>$(k).oninput=e=>{S[k]=Math.max(num(e.target.value),0);touch();});
-$('vat').onchange=e=>{S.vat=+e.target.value;touch();};
-$('round').onchange=e=>{S.round=+e.target.value;touch();};
-$('mMarkup').onclick=()=>{S.mode='markup';touch();};
-$('mMargin').onclick=()=>{S.mode='margin';touch();};
-$('addRow').onclick=()=>{S.rows.push({n:'',t:'v',a:0});renderRows();touch();const i=S.rows.length-1;$('rn'+i).focus();};
-const load=(k,isSample)=>{S=JSON.parse(JSON.stringify(PRESETS[k]));sample=isSample;try{localStorage.removeItem(KEY);}catch(e){}fill();};
-$('pCoffee').onclick=()=>load('coffee',true); $('pVideo').onclick=()=>load('video',true); $('pBlank').onclick=()=>load('blank',false);
-
-$('copy').onclick=()=>{
-  const r=calc(S), u=S.unit||'đơn vị'; if(!r.ok) return;
-  const t=[`TÍNH GIÁ BÁN: ${S.name||'(chưa đặt tên)'}`,`Số lượng: ${fmt(r.qty)} ${u}`,'',
-    ...S.rows.filter(x=>x.a>0).map(x=>`- ${x.n||'Khoản chi'}: ${dong(x.a)} (${x.t==='v'?'theo từng '+u:'cố định cả lô'})`),
-    `Quản lý chung ${S.oh}%, dự phòng ${S.dp}%`,'',
-    `Giá vốn / ${u}: ${dong(r.c)}`,`Giá bán chưa VAT: ${dong(r.net)}`,`VAT ${S.vat}%: ${dong(r.vatAmt)}`,
-    `GIÁ BÁN / ${u}: ${dong(r.gross)}`,`Phí kênh bán ${S.fee}%: ${dong(r.feeAmt)}`,
-    `Lãi / ${u}: ${dong(r.profit)} (biên ${pct(r.margin)})`,`Tổng lãi cả lô: ${dong(r.tp)}`,
-    `Hòa vốn: ${r.be===0?'không có định phí':r.be===null?'không đạt':fmt(r.be)+' '+u}`].join('\n');
-  const done=()=>{$('copied').textContent='Đã sao chép';setTimeout(()=>$('copied').textContent='',2000);};
-  const fb=()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');done();}catch(e){$('copied').textContent='Không sao chép được';}a.remove();};
-  try{navigator.clipboard.writeText(t).then(done,fb);}catch(e){fb();}
-};
-fill();
+renderAll();
 </script>
 
 <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}</script>
