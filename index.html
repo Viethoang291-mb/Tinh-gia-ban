@@ -86,6 +86,7 @@ body{padding-top:calc(24px + env(safe-area-inset-top,0px));padding-bottom:calc(5
 </style>
 </head>
 <body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <div class="wrap">
   <header>
@@ -101,6 +102,7 @@ body{padding-top:calc(24px + env(safe-area-inset-top,0px));padding-bottom:calc(5
       <tbody id="tbody"></tbody>
     </table></div>
     <div class="bar"><button type="button" class="primary" data-act="add">+ Thêm loại mận</button>
+      <button type="button" data-act="xlsx">Xuất file Excel</button>
       <button type="button" data-act="copy">Sao chép bảng giá</button><span class="status" id="status" role="status"></span></div>
   </div>
 
@@ -222,16 +224,97 @@ document.addEventListener('toggle',e=>{ const d=e.target; if(d.tagName==='DETAIL
 document.addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b) return; const a=b.dataset.act,i=+b.dataset.i,j=+b.dataset.j;
   if(a==='sample'||a==='blank'){ S=JSON.parse(JSON.stringify(a==='sample'?SAMPLE:BLANK)); sample=a==='sample'; try{localStorage.removeItem(KEY);}catch(x){} if(!sample) save(); render(); return; }
   if(a==='copy'){ copyAll(); return; }
+  if(a==='xlsx'){ exportXlsx(); return; }
   if(a==='add'){ const prev=S.items[S.items.length-1]; S.items.push({n:'',buy:0,loss:prev?prev.loss:0,costs:prev?JSON.parse(JSON.stringify(prev.costs)):[{n:'',p:0}],margin:prev?prev.margin:30,price:0,kg:0,open:true}); touch(true); $('n'+(S.items.length-1)).focus(); return; }
   if(a==='dup'){ const c=JSON.parse(JSON.stringify(S.items[i])); c.n=(c.n||'Mận')+' (bản sao)'; c.open=true; S.items.splice(i+1,0,c); touch(true); $('n'+(i+1)).focus(); return; }
   if(a==='del'){ S.items.splice(i,1); touch(true); return; }
   if(a==='addCost'){ S.items[i].costs.push({n:'',p:0}); touch(true); $(`cn${i}_${S.items[i].costs.length-1}`).focus(); return; }
   if(a==='delCost'){ S.items[i].costs.splice(j,1); touch(true); return; }
 });
+function say(m,keep){ const s=$('status'); s.textContent=m; clearTimeout(say.t); if(!keep) say.t=setTimeout(()=>{s.textContent='';},4000); }
+
+// File Excel có công thức: sửa giá thu mua hoặc % chi phí trong Excel thì các cột còn lại tự tính lại
+function buildWorkbook(){
+  const MONEY='#,##0', PCT='0.0%', P1="'Bảng giá'", P2="'Chi phí'";
+  const n=S.items.length, last=n+1;
+  const head=['Loại mận','Giá thu mua (đ/kg)','Hao hụt','Tổng chi phí (% giá mua)','Tiền mận / kg bán được','Chi phí khác / kg','Cost / kg','Lãi mong muốn (trên cost)','Giá bán đề xuất / kg','Giá bán thực tế / kg','Giá bán áp dụng / kg','Lãi / kg','Lãi trên giá bán','Sản lượng dự kiến (kg)','Tổng lãi'];
+  const ws1={}; const put=(ws,addr,c)=>{ ws[addr]=c; };
+  head.forEach((h,c)=>put(ws1,XLSX.utils.encode_cell({r:0,c}),{t:'s',v:h}));
+  S.items.forEach((it,i)=>{ const r=calc(it), R=i+2, nm=it.n||`Loại ${i+1}`;
+    const ceil = S.round>0 ? `CEILING(G${R}*(1+H${R}),${S.round})` : `ROUND(G${R}*(1+H${R}),0)`;
+    const cells=[
+      {t:'s',v:nm},
+      {t:'n',v:it.buy,z:MONEY},
+      {t:'n',v:it.loss/100,z:PCT},
+      {t:'n',v:r.pSum/100,z:PCT,f:`SUMIFS(${P2}!C:C,${P2}!A:A,A${R})`},
+      {t:'n',v:r.fruit,z:MONEY,f:`IF(C${R}<1,B${R}/(1-C${R}),0)`},
+      {t:'n',v:r.extra,z:MONEY,f:`B${R}*D${R}`},
+      {t:'n',v:r.cost,z:MONEY,f:`E${R}+F${R}`},
+      {t:'n',v:it.margin/100,z:PCT},
+      {t:'n',v:r.sug,z:MONEY,f:ceil},
+      it.price>0?{t:'n',v:it.price,z:MONEY}:{t:'z'},
+      {t:'n',v:r.price,z:MONEY,f:`IF(J${R}>0,J${R},I${R})`},
+      {t:'n',v:r.profit,z:MONEY,f:`K${R}-G${R}`},
+      {t:'n',v:r.onPrice||0,z:PCT,f:`IF(K${R}>0,L${R}/K${R},0)`},
+      {t:'n',v:it.kg,z:MONEY},
+      {t:'n',v:r.total,z:MONEY,f:`L${R}*N${R}`}];
+    cells.forEach((c,ci)=>{ if(c.t!=='z') put(ws1,XLSX.utils.encode_cell({r:i+1,c:ci}),c); });
+  });
+  const tot=S.items.reduce((a,it)=>a+calc(it).total,0);
+  put(ws1,`A${last+1}`,{t:'s',v:'Tổng cộng'});
+  put(ws1,`N${last+1}`,{t:'n',v:S.items.reduce((a,it)=>a+it.kg,0),z:MONEY,f:`SUM(N2:N${last})`});
+  put(ws1,`O${last+1}`,{t:'n',v:tot,z:MONEY,f:`SUM(O2:O${last})`});
+  put(ws1,`A${last+3}`,{t:'s',v:'Sửa giá thu mua (cột B), hao hụt (cột C) hoặc tỷ lệ chi phí ở sheet "Chi phí": các cột còn lại tự tính lại.'});
+  put(ws1,`A${last+4}`,{t:'s',v:S.round>0?`Giá bán đề xuất làm tròn lên ${fmt(S.round)} đ.`:'Giá bán đề xuất không làm tròn.'});
+  put(ws1,`A${last+5}`,{t:'s',v:'Xuất từ Bảng tính giá bán mận ngày '+new Date().toLocaleDateString('vi-VN')});
+  ws1['!ref']=`A1:O${last+5}`;
+  ws1['!cols']=[{wch:30},...head.slice(1).map(()=>({wch:16}))];
+
+  const rows=[['Loại mận','Khoản chi','Tỷ lệ (% giá mua)','Số tiền / kg']];
+  const ws2=XLSX.utils.aoa_to_sheet(rows);
+  let R=2;
+  S.items.forEach((it,i)=>{ const nm=it.n||`Loại ${i+1}`;
+    it.costs.forEach(c=>{ put(ws2,`A${R}`,{t:'s',v:nm}); put(ws2,`B${R}`,{t:'s',v:c.n||'Khoản chi'});
+      put(ws2,`C${R}`,{t:'n',v:c.p/100,z:PCT});
+      put(ws2,`D${R}`,{t:'n',v:it.buy*c.p/100,z:MONEY,f:`C${R}*IFERROR(VLOOKUP(A${R},${P1}!A:B,2,FALSE),0)`}); R++; });
+  });
+  ws2['!ref']=`A1:D${Math.max(R-1,1)}`; ws2['!cols']=[{wch:30},{wch:32},{wch:18},{wch:16}];
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws1,'Bảng giá');
+  XLSX.utils.book_append_sheet(wb,ws2,'Chi phí');
+  return wb;
+}
+async function exportXlsx(){
+  if(typeof XLSX==='undefined'){ say('Chưa tải được công cụ xuất Excel. Kiểm tra kết nối mạng rồi mở lại app.'); return; }
+  if(!S.items.length){ say('Chưa có loại mận nào để xuất.'); return; }
+  const d=new Date(), dd=n=>String(n).padStart(2,'0');
+  const filename=`${dd(d.getDate())}.${dd(d.getMonth()+1)}.${d.getFullYear()}_Bảng giá bán mận.xlsx`;
+  const buf=XLSX.write(buildWorkbook(),{bookType:'xlsx',type:'array'});
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  if(window.claude && typeof window.claude.use==='function'){
+    const dl=await window.claude.use('downloads');
+    if(!dl){ say('Trang này chưa cho phép tải file.'); return; }
+    try{ await dl.save({filename,data:blob}); say('Đã xuất file Excel'); }
+    catch(e){ say(e&&e.code==='declined'?'Đã hủy xuất file.':e&&e.code==='rate_limited'?'Đang có một yêu cầu tải khác, thử lại sau giây lát.':'Không xuất được file ở đây.'); }
+    return;
+  }
+  const file=new File([blob],filename,{type:blob.type});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file],title:'Bảng giá bán mận'}); say('Đã xuất file Excel'); }
+    catch(e){ if(e&&e.name!=='AbortError') saveLink(blob,filename); }
+    return;
+  }
+  saveLink(blob,filename);
+}
+function saveLink(blob,filename){
+  const url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),10000); say('Đã xuất file Excel');
+}
 function copyAll(){
   const t=['BẢNG GIÁ MẬN (tính cho 1 kg)','',...S.items.map(it=>{const r=calc(it);
     return `${it.n||'(chưa đặt tên)'}: giá mua ${dong(it.buy)}, cost ${dong(r.cost)}, giá bán ${dong(r.price)}, lãi ${dong(r.profit)}/kg`;})].join('\n');
-  const say=m=>{const s=$('status'); s.textContent=m; setTimeout(()=>{s.textContent='';},2500);};
   const fb=()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');say('Đã sao chép');}catch(e){say('Không sao chép được');}a.remove();};
   try{navigator.clipboard.writeText(t).then(()=>say('Đã sao chép'),fb);}catch(e){fb();}
 }
